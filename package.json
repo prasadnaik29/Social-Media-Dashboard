@@ -1,0 +1,13 @@
+{
+  "name": "nexus-social-media",
+  "version": "1.0.0",
+  "description": "Full-stack social media dashboard built with MERN + Socket.IO",
+  "scripts": {
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm run dev",
+    "dev": "start cmd /k \"cd server && npm run dev\" && start cmd /k \"cd client && npm run dev\""
+  },
+  "keywords": ["social-media", "mern", "socket.io", "react"],
+  "author": "",
+  "license": "ISC"
+}
