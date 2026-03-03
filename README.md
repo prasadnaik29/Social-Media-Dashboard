@@ -44,7 +44,7 @@ A full-stack social media platform built with the **MERN stack** — featuring r
 ### 1. Clone & Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/social-media-dashboard.git
+git clone https://github.com/prasadnaik29/Social-Media-Dashboard.git
 cd social-media-dashboard
 
 # Install server dependencies
