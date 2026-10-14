@@ -139,10 +139,14 @@ export default function Home() {
             {posts.map(post => (
               <PostCard key={post._id} post={post} onDeleted={handleDeleted} />
             ))}
-            {hasMore && (
+            {hasMore ? (
               <button className="btn btn-secondary" onClick={loadMore} disabled={loadingMore} style={{ alignSelf: 'center' }}>
                 {loadingMore ? <span className="spinner" style={{ width: 18, height: 18, borderWidth: 2 }} /> : 'Load More'}
               </button>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '16px 0', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                ✨ You're all caught up!
+              </div>
             )}
           </>
         )}

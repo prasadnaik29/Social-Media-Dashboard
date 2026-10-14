@@ -191,14 +191,51 @@ export default function Messages() {
     const onTyping     = ({ conversationId }) => { if (activeConv?._id === conversationId) setIsTyping(true); };
     const onStopTyping = ({ conversationId }) => { if (activeConv?._id === conversationId) setIsTyping(false); };
 
+    const onMessageSaved = (savedMsg) => {
+      if (activeConv && savedMsg.conversationId === activeConv._id) {
+        setMessages(prev => {
+          const index = prev.findIndex(
+            m => m._id?.startsWith('optimistic') && m.text === savedMsg.text
+          );
+          if (index !== -1) {
+            const updated = [...prev];
+            updated[index] = savedMsg;
+            return updated;
+          }
+          if (prev.some(m => m._id === savedMsg._id)) return prev;
+          return [...prev, savedMsg];
+        });
+      }
+      setConversations(prev => {
+        const exists = prev.find(c => c._id === savedMsg.conversationId);
+        if (exists) {
+          return prev.map(c =>
+            c._id === savedMsg.conversationId
+              ? { ...c, lastMessage: savedMsg.text, lastMessageAt: savedMsg.createdAt }
+              : c
+          ).sort((a, b) => new Date(b.lastMessageAt) - new Date(a.lastMessageAt));
+        }
+        return prev;
+      });
+    };
+
+    const onMessageError = ({ message }) => {
+      toast.error(message || 'Failed to send message');
+      setMessages(prev => prev.filter(m => !m._id?.startsWith('optimistic')));
+    };
+
     socket.on('newMessage',      onNewMessage);
+    socket.on('messageSaved',    onMessageSaved);
+    socket.on('messageError',    onMessageError);
     socket.on('userTyping',      onTyping);
     socket.on('userStopTyping',  onStopTyping);
 
     return () => {
-      socket.off('newMessage',     onNewMessage);
-      socket.off('userTyping',     onTyping);
-      socket.off('userStopTyping', onStopTyping);
+      socket.off('newMessage',      onNewMessage);
+      socket.off('messageSaved',    onMessageSaved);
+      socket.off('messageError',    onMessageError);
+      socket.off('userTyping',      onTyping);
+      socket.off('userStopTyping',  onStopTyping);
     };
   }, [socket, activeConv?._id]);
 
