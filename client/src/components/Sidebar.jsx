@@ -17,14 +17,24 @@ export default function Sidebar() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearch, setShowSearch] = useState(false);
+  const [searching, setSearching] = useState(false);
 
   const handleSearch = async (q) => {
     setSearchQuery(q);
-    if (q.trim().length < 2) { setSearchResults([]); return; }
+    if (q.trim().length < 2) {
+      setSearchResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
     try {
       const { data } = await axios.get(`/api/users/search?q=${q}`);
       setSearchResults(data);
-    } catch { }
+    } catch {
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
   };
 
   const handleLogout = () => {
@@ -59,28 +69,38 @@ export default function Sidebar() {
             onBlur={() => setTimeout(() => setShowSearch(false), 200)}
           />
         </div>
-        {showSearch && searchResults.length > 0 && (
+        {showSearch && searchQuery.trim().length >= 2 && (
           <div style={{
             position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
             background: 'var(--bg-card)', border: '1px solid var(--border)',
             borderRadius: 'var(--radius)', marginTop: 4, overflow: 'hidden',
             boxShadow: 'var(--shadow)',
           }}>
-            {searchResults.map(u => (
-              <div key={u._id}
-                style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', cursor: 'pointer', transition: 'background 0.15s' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                onClick={() => { navigate(`/profile/${u.username}`); setShowSearch(false); setSearchQuery(''); }}
-              >
-                <AvatarEl user={u} size="sm" />
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{u.fullName}</div>
-                  <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>@{u.username}</div>
-                </div>
-                {u.isOnline && <div className="online-dot" style={{ position: 'static', marginLeft: 'auto' }} />}
+            {searching ? (
+              <div style={{ padding: '12px 14px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                Searching...
               </div>
-            ))}
+            ) : searchResults.length > 0 ? (
+              searchResults.map(u => (
+                <div key={u._id}
+                  style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', cursor: 'pointer', transition: 'background 0.15s' }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  onClick={() => { navigate(`/profile/${u.username}`); setShowSearch(false); setSearchQuery(''); }}
+                >
+                  <AvatarEl user={u} size="sm" />
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{u.fullName}</div>
+                    <div style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>@{u.username}</div>
+                  </div>
+                  {u.isOnline && <div className="online-dot" style={{ position: 'static', marginLeft: 'auto' }} />}
+                </div>
+              ))
+            ) : (
+              <div style={{ padding: '12px 14px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                No users found
+              </div>
+            )}
           </div>
         )}
       </div>
